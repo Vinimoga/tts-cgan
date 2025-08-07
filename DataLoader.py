@@ -103,3 +103,29 @@ class mitbih_test(Dataset):
     
     def __getitem__(self, idx):
         return self.X_test[idx], self.y_test[idx]
+
+def reshape_daghar_loader(train_loader):
+    """
+    Retorna um novo DataLoader onde os tensores do batch têm shape (B, 6, 1, 60),
+    processando os dados em lote (sem iterar item por item).
+    """
+
+    def collate_fn_with_unsqueeze(batch):
+        xs, ys = zip(*batch)  # xs: tuple de (6,60), ys: tuple de labels
+
+        # Vetorizado: stack direto e converte para tensor
+        xs = np.stack(xs)  # shape: (B, 6, 60)
+        xs = torch.from_numpy(xs).unsqueeze(2).float()  # (B, 6, 1, 60)
+
+        ys = torch.tensor(ys)
+        return xs, ys
+
+    return DataLoader(
+        dataset=train_loader.dataset,
+        batch_size=train_loader.batch_size,
+        shuffle=getattr(train_loader, 'shuffle', True),
+        num_workers=train_loader.num_workers,
+        pin_memory=train_loader.pin_memory,
+        drop_last=train_loader.drop_last,
+        collate_fn=collate_fn_with_unsqueeze
+    )
