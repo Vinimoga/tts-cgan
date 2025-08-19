@@ -171,6 +171,11 @@ def parse_args():
         type=str,
         default='./data',
         help='The path of data set')
+    parser.add_argument(
+        '--data_normalized',
+        action='store_true',
+        help='Whether the data is normalized or not. If set, the data in data_path should be normalized.'
+    )
     parser.add_argument('--init_type', type=str, default='normal',
                         choices=['normal', 'orth', 'xavier_uniform', 'false'],
                         help='The init type')

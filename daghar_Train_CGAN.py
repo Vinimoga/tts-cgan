@@ -13,10 +13,21 @@ def parse_args():
 
 args = parse_args() 
 #500000 on the max_iter
+# data path can be /workspaces/container-workspace/standardized_view for normal daghar data
+
+# if you want to use the normalized data, you can use the following paths:
+# /workspaces/container-workspace/data/normalized_label for normalized label data
+# or /workspaces/container-workspace/data/normalized_all for normalized all data
+
+#if not, take out the data_normalized argument
+# and set the data_path to the path of the data you want to use, e.g., /workspaces/container-workspace/data/standardized_view
+
+
 message = f"CUDA_VISIBLE_DEVICES=0 python trainCGAN_daghar.py \
 -gen_bs 64 \
 -dis_bs 64 \
---data_path /workspaces/container-workspace/CPC_daghar_data \
+--data_path /workspaces/container-workspace/data/normalized_all \
+--data_normalized \
 --dist-url 'tcp://localhost:4321' \
 --dist-backend 'nccl' \
 --world-size 1 \
@@ -57,7 +68,7 @@ message = f"CUDA_VISIBLE_DEVICES=0 python trainCGAN_daghar.py \
 --ema_warmup 0.1 \
 --ema 0.9999 \
 --diff_aug translation,cutout,color \
---exp_name dagharCGAN"
+--exp_name normalized_all_dagharCGAN"
 
 print(message)
 os.system(message)

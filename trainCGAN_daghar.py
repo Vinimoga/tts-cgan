@@ -27,6 +27,7 @@ import PIL.Image
 from torchvision.transforms import ToTensor
 
 from minerva.data.data_modules.har_rodrigues_24 import HARDataModuleCPC
+from minerva.data.data_modules.har import MultiModalHARSeriesDataModule
 
 
 
@@ -165,16 +166,21 @@ def main_worker(gpu, ngpus_per_node, args):
         train_set = mitbih_train(filename=args.data_path)
         train_loader = data.DataLoader(train_set, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True)
     elif args.dataset == 'daghar':
-        datasets = ['kuhar', 'motion', 'rw-thigh', 'rw-waist', 'uci', 'wisdm']
-        datasets_path = [os.path.join(args.data_path,current_dataset) for current_dataset in datasets]
-
-        data_module = HARDataModuleCPC(
+        if not args.data_normalized:
+            datasets = ['kuhar', 'motion', 'rw-thigh', 'rw-waist', 'uci', 'wisdm']
+            datasets_path = [os.path.join(args.data_path, current_dataset) for current_dataset in datasets]
+        else:
+            datasets_path = args.data_path
+        
+        data_module = MultiModalHARSeriesDataModule(
             data_path=datasets_path,
-            input_size=6,
-            window=60,
-            overlap=60,
+            feature_prefixes=["accel-x", "accel-y", "accel-z", "gyro-x", "gyro-y", "gyro-z"],
+            label="standard activity code",
+            features_as_channels=True,
+            cast_to="float32",
             batch_size=args.batch_size,
-            label='standard activity code')
+            use_train_as_validation=True,
+        )
         
         data_module.setup('fit')
         train_loader = reshape_daghar_loader(data_module.train_dataloader()) #to get the shape (batch, 6, 1, 60)
